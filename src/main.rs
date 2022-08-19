@@ -25,7 +25,7 @@ async fn main() {
     {
        let mut s = spd.stash.write().unwrap();
        s.mem_limit = args.mem * 1000000;
-       s.trace = true;
+       s.trace = args.tracemem;
     }
     // Construct map of "builtin" functions that can be called in SQL code.
     // Include extra functions ARGON, EMAILTX and SLEEP as well as the standard functions.
@@ -68,6 +68,7 @@ async fn main() {
         is_master,
         replicate_source,
         replicate_credentials,
+        tracetime: args.tracetime,
     });
 
     if is_master {
@@ -99,7 +100,14 @@ async fn main() {
         loop {
             let mut sm = rx.blocking_recv().unwrap();
             let sql = sm.st.x.qy.sql.clone();
-            db.run_timed(&sql, &mut *sm.st.x);
+            if ss.tracetime
+            {
+              db.run_timed(&sql, &mut *sm.st.x);
+            }
+            else
+            {
+              db.run(&sql, &mut *sm.st.x);
+            }
 
             if sm.st.log && db.changed() {
                 if let Some(t) = db.get_table(&ObjRef::new("log", "Transaction")) {
@@ -220,6 +228,7 @@ struct SharedState {
     is_master: bool,
     replicate_source: String,
     replicate_credentials: String,
+    tracetime: bool,
 }
 
 impl SharedState {
@@ -249,7 +258,7 @@ impl SharedState {
 
 /// Handler for http GET requests.
 async fn h_get(
-    state: Extension<Arc<SharedState>>,
+    ss: Extension<Arc<SharedState>>,
     path: Path<String>,
     params: Query<BTreeMap<String, String>>,
     cookies: Cookies,
@@ -260,16 +269,24 @@ async fn h_get(
     st.x.qy.params = params.0;
     st.x.qy.cookies = map_cookies(cookies);
 
-    let mut wait_rx = state.wait_tx.subscribe();
-    let spd = state.spd.clone();
-    let bmap = state.bmap.clone();
+    let mut wait_rx = ss.wait_tx.subscribe();
+    let spd = ss.spd.clone();
+    let bmap = ss.bmap.clone();
 
+    let tracetime = ss.tracetime;
     let mut st = tokio::task::spawn_blocking(move || {
         // GET requests should be read-only.
         let apd = AccessPagedData::new_reader(spd);
         let db = Database::new(apd, "", bmap);
         let sql = st.x.qy.sql.clone();
-        db.run_timed(&sql, &mut *st.x);
+        if tracetime
+        {
+          db.run_timed(&sql, &mut *st.x);
+        }
+        else
+        {
+          db.run(&sql, &mut *st.x);
+        }
         st
     })
     .await
@@ -284,7 +301,7 @@ async fn h_get(
             }
         }
     }
-    state.trim_cache();
+    ss.trim_cache();
     st
 }
 
@@ -796,10 +813,6 @@ struct Args {
    #[clap(short, long, value_parser, default_value = "0.0.0.0")]
    ip: String,
 
-   /// Memory limit for page cache (in MB)
-   #[clap(short, long, value_parser, default_value_t = 10)]
-   mem: usize,
-
    /// Server to replicate
    #[clap(short, long, value_parser, default_value = "")]
    rep: String,
@@ -807,4 +820,17 @@ struct Args {
    /// Login cookies for replication
    #[clap(short, long, value_parser, default_value = "")]
    login: String,
+
+   /// Memory limit for page cache (in MB)
+   #[clap(short, long, value_parser, default_value_t = 10)]
+   mem: usize,
+
+   /// Trace query time
+   #[clap(long, value_parser, default_value_t = false)]
+   tracetime: bool,
+
+   /// Trace memory trimming
+   #[clap(long, value_parser, default_value_t = false)]
+   tracemem: bool,
+
 }
