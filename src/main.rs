@@ -22,8 +22,11 @@ async fn main() {
     // SharedPagedData allows for one writer and multiple readers.
     // Note that readers never have to wait, they get a "virtual" read-only copy of the database.
     let spd = Arc::new(SharedPagedData::new(stg));
-    spd.stash.write().unwrap().mem_limit = args.mem * 10000000;
-
+    {
+       let mut s = spd.stash.write().unwrap();
+       s.mem_limit = args.mem * 1000000;
+       s.trace = true;
+    }
     // Construct map of "builtin" functions that can be called in SQL code.
     // Include extra functions ARGON, EMAILTX and SLEEP as well as the standard functions.
     let mut bmap = BuiltinMap::default();
