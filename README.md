@@ -2,10 +2,10 @@ Axum-based webserver based on rustdb database, with database browsing,
 timed jobs, password hashing, data compression, email transmission and database replication.
 
 USAGE:\
-    rustweb.exe [OPTIONS] <PORT>\
+    rustweb.exe [OPTIONS] <PORT>
 
 ARGS:\
-    <PORT>    Port to listen on\
+    <PORT>    Port to listen on
 
 OPTIONS:\
     -h, --help             Print help information\
@@ -15,6 +15,6 @@ OPTIONS:\
     -r, --rep <REP>        Server to replicate [default: ]\
         --tracemem         Trace memory trimming\
         --tracetime        Trace query time\
-    -V, --version          Print version information\
+    -V, --version          Print version information
 
 crates.io : https://crates.io/crates/rustweb
