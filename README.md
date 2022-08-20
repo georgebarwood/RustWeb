@@ -10,7 +10,6 @@ Install rustweb from a command prompt using
 cargo install rustweb
 
 From a command prompt, change to the the directory where the database is to be stored ( the file will be named rustweb.rustdb ). 
-
 Start rustweb using
 
 rustweb 3000
