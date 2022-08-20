@@ -54,7 +54,7 @@ Email
 
 Email can be sent using the email schema.
 
-(1) Ceate a record in email.SmtpServer
+(1) Create a record in email.SmtpServer
 
 (2) Create an email in email.msg
 
