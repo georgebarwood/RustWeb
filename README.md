@@ -3,9 +3,9 @@ with database browsing, password hashing, database replication, email transmissi
 
 Installation and starting server
 ================================
-Install [Rust](https://www.rust-lang.org/tools/install)if it is not already installed.
+Install [Rust](https://www.rust-lang.org/tools/install) if it is not already installed.
 
-Install rustweb using
+Install rustweb from a command prompt using
 
 cargo install rustweb
 
