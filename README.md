@@ -19,7 +19,7 @@ OPTIONS:\
 
 crates.io : https://crates.io/crates/rustweb
 
-Installation and starting server\
+Installation and starting server
 ================================
 
 cargo install rustweb
@@ -30,7 +30,7 @@ This should start the rustweb, listening on port 3000.
 
 You should then be able to browse to http://localhost:3000/Menu
 
-Security\
+Security
 ========
 
 Initially security is disabled. To enable it 
@@ -41,7 +41,7 @@ Initially security is disabled. To enable it
 
 (3) Edit handler.get ( see instructions there ).
 
-Database replication\
+Database replication
 ====================
 
 Start Rustweb in the directory (folder) specifying -rer and -login options.
@@ -54,7 +54,7 @@ If login security has been enabled, you will need to specify login details ( fro
 
 --login "uid=1; hpw="0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
-Email\
+Email
 =====
 
 Email can be sent using the email schema.
@@ -71,7 +71,7 @@ If an email cannot be sent, and the error is temporary, it will be inserted into
 
 Permanent errors are logged in email.SendError
 
-Timed Jobs\
+Timed Jobs
 ==========
 
 A named SQL function (with no paramaters) can be called at a specified time by creating a record in timed.Job.
