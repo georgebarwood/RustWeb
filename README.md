@@ -40,13 +40,13 @@ rustweb --rep https://mydomain.com
 
 If login security has been enabled, you will need to specify login details ( obtained from the login.user table ), for example:
 
---login "uid=1; hpw=0xaaa02385uabbdff839894888dd8e8abbceaaa02385uabbdff839894888dd8e8c"
+--login "uid=1; hpw=0xaaa023850abbdff839894888dd8e8abbceaaa023855abbdff839894888dd8e8c"
 
 If the database is very large, it may be more practical to use FTP to get an initial copy of the database, otherwise a copy will be fetched automatically.
 
 Replication is enabled by records being inserted in the log.Transaction table. 
 
-These records can be periodically deleted, provided that all "slave" servers are up to date.
+These records can be periodically deleted, provided that all replication servers are up to date.
 
 Email
 =====

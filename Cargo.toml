@@ -1,8 +1,8 @@
 [package]
 name = "rustweb"
-version = "0.1.0"
+version = "0.2.5"
 edition = "2021"
-
+authors = ["George Barwood"]
 license = "MIT OR Apache-2.0"
 description = "Rust-based web server"
 repository = "https://github.com/georgebarwood/rustweb"
@@ -19,7 +19,7 @@ rmp-serde = "1.1.0"
 reqwest = "0.11.11"
 
 #rustdb = { path = "../rustdb" } 
-rustdb = { version = "2.6.0" }
+rustdb = { version = "2.7.1" }
 mimalloc = { version = "0.1.26", default-features = false }
 lettre = { version = "0.10.1" }
 flate3 = "0.1.21"
