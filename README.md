@@ -3,9 +3,8 @@ with database browsing, password hashing, database replication, email transmissi
 
 Installation and starting server
 ================================
-Install [Rust](https://www.rust-lang.org/tools/install) if it is not already installed.
-
-Install rustweb from a command prompt using
+First install [Rust](https://www.rust-lang.org/tools/install) if it is not already installed.
+Then install rustweb from a command prompt using
 
 cargo install rustweb
 
@@ -15,9 +14,7 @@ Start rustweb using
 rustweb 3000
 
 This should start rustweb server, listening on port 3000 ( you can use any available port ).
-
 You should then be able to browse to http://localhost:3000/Menu
-
 From there are links to a Manual, Execute SQL, a list of Schemas and other links.
 
 Security
