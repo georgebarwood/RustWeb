@@ -5,13 +5,13 @@ Installation and starting server
 ================================
 Change to the directory where the database is to be stored ( it will be named rustweb.rustdb ). 
 
-Install Rust, then run cargo commands
+Install Rust, then from a command prompt run commands
 
 cargo install rustweb
 
 rustweb 3000
 
-This should start rustweb server, listening on port 3000.
+This should start rustweb server, listening on port 3000 ( you can use any available port ).
 
 You should then be able to browse to http://localhost:3000/Menu
 
@@ -26,7 +26,7 @@ Initially login security is disabled. To enable it
 
 (2) Create a record in login.user.
 
-(3) Use the Logins link to set up a password.
+(3) Use the Logins Menu link to set a password.
 
 (4) Edit the function login.get ( see instructions included there ).
 
@@ -37,7 +37,7 @@ Start Rustweb in the directory (folder) where you want the replicated database s
 
 For example:
 
-rustweb --rep https://mydomain.com
+rustweb 2000 --rep https://mydomain.com
 
 If login security has been enabled, you will need to specify login details ( obtained from the login.user table ), for example:
 
