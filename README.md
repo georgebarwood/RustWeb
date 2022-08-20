@@ -44,7 +44,7 @@ Initially security is disabled. To enable it
 Database replication
 ====================
 
-Start Rustweb in the directory (folder) specifying -rer and -login options.
+Start Rustweb in the directory (folder) where you want the replicated database stored, specifying the  -rep option
 
 For example:
 
@@ -53,6 +53,11 @@ rustweb --rep https://mydomain.com
 If login security has been enabled, you will need to specify login details ( from the login.user table ), for example:
 
 --login "uid=1; hpw=0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+If the database is very large, you may want to use FTP to get an initial copy of the database, otherwise a copy will be fetched automatically.
+
+Replication is enabled by records being inserted in the log.Transaction table. 
+These records can be deleted, provided that all "slave" servers are up to date.
 
 Email
 =====
