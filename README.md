@@ -3,11 +3,15 @@ with database browsing, password hashing, database replication, email transmissi
 
 Installation and starting server
 ================================
-Change to the directory where the database is to be stored ( it will be named rustweb.rustdb ). 
+Install [Rust](https://www.rust-lang.org/tools/install)if it is not already installed.
 
-Install Rust, then from a command prompt run commands
+Install rustweb using
 
 cargo install rustweb
+
+From a command prompt, change to the the directory where the database is to be stored ( the file will be named rustweb.rustdb ). 
+
+Start rustweb using
 
 rustweb 3000
 
