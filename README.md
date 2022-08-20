@@ -8,7 +8,7 @@ Install Rust, then run cargo commands
 
 cargo install rustweb
 
-cargo run rustweb 3000
+rustweb 3000
 
 This should start rustweb server, listening on port 3000.
 
