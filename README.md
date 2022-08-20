@@ -52,7 +52,7 @@ rustweb --rep https://mydomain.com
 
 If login security has been enabled, you will need to specify login details ( from the login.user table ), for example:
 
---login "uid=1; hpw="0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+--login "uid=1; hpw=0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
 Email
 =====
