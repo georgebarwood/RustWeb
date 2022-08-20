@@ -1,26 +1,8 @@
 Axum-based webserver based on rustdb database, with database browsing, password hashing, database replication, email tranmission and timed jobs.
 
-USAGE:\
-    rustweb.exe [OPTIONS] <PORT>
-
-ARGS:\
-    <PORT>    Port to listen on
-
-OPTIONS:\
-    -h, --help             Print help information\
-    -i, --ip <IP>          Ip Address to listen on [default: 0.0.0.0]\
-    -l, --login <LOGIN>    Login cookies for replication [default: ]\
-    -m, --mem <MEM>        Memory limit for page cache (in MB) [default: 10]\
-    -r, --rep <REP>        Server to replicate [default: ]\
-        --tracemem         Trace memory trimming\
-        --tracetime        Trace query time\
-    -V, --version          Print version information
-
-crates.io : https://crates.io/crates/rustweb
-
 Installation and starting server
 ================================
-Change to the directory where you want the database stored ( it will be named rustweb.rustdb ). 
+Change to the directory where the database is to be stored ( it will be named rustweb.rustdb ). 
 
 Install Rust, then run cargo commands
 
@@ -35,7 +17,7 @@ You should then be able to browse to http://localhost:3000/Menu
 Security
 ========
 
-Initially security is disabled. To enable it 
+Initially login security is disabled. To enable it 
 
 (1) Create a record in login.user.
 
@@ -52,14 +34,15 @@ For example:
 
 rustweb --rep https://mydomain.com
 
-If login security has been enabled, you will need to specify login details ( from the login.user table ), for example:
+If login security has been enabled, you will need to specify login details ( obtained from the login.user table ), for example:
 
---login "uid=1; hpw=0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+--login "uid=1; hpw=0xaaa02385uabbdff839894888dd8e8abbceaaa02385uabbdff839894888dd8e8c"
 
-If the database is very large, you may want to use FTP to get an initial copy of the database, otherwise a copy will be fetched automatically.
+If the database is very large, it may be more practical to use FTP to get an initial copy of the database, otherwise a copy will be fetched automatically.
 
 Replication is enabled by records being inserted in the log.Transaction table. 
-These records can be deleted, provided that all "slave" servers are up to date.
+
+These records can be periodically deleted, provided that all "slave" servers are up to date.
 
 Email
 =====
@@ -84,3 +67,24 @@ Timed Jobs
 A named SQL function (with no paramaters) can be called at a specified time by creating a record in timed.Job.
 
 This is used by the email system to retry temporary email send errors.
+
+Arguments and Options
+=====================
+
+USAGE:\
+    rustweb [OPTIONS] <PORT>
+
+ARGS:\
+    <PORT>    Port to listen on
+
+OPTIONS:\
+    -h, --help             Print help information\
+    -i, --ip <IP>          Ip Address to listen on [default: 0.0.0.0]\
+    -l, --login <LOGIN>    Login cookies for replication [default: ]\
+    -m, --mem <MEM>        Memory limit for page cache (in MB) [default: 10]\
+    -r, --rep <REP>        Server to replicate [default: ]\
+        --tracemem         Trace memory trimming\
+        --tracetime        Trace query time\
+    -V, --version          Print version information
+
+crates.io : https://crates.io/crates/rustweb
