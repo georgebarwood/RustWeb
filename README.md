@@ -39,7 +39,7 @@ Initially security is disabled. To enable it
 
 (2) Use the Logins link to set up a password.
 
-(3) Edit handler.get ( see instructions there ).
+(3) Edit the function login.get ( see instructions included there ).
 
 Database replication
 ====================
