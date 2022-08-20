@@ -1,4 +1,5 @@
-Axum-based webserver based on [rustdb](https://github.com/georgebarwood/RustDB) database, with database browsing, password hashing, database replication, email tranmission and timed jobs.
+Axum-based webserver based on [rustdb](https://github.com/georgebarwood/RustDB) database, 
+with database browsing, password hashing, database replication, email transmission and timed jobs.
 
 Installation and starting server
 ================================
