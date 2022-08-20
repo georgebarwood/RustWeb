@@ -21,12 +21,15 @@ crates.io : https://crates.io/crates/rustweb
 
 Installation and starting server
 ================================
+Change to the directory where you want the database stored ( it will be named rustweb.rustdb ). 
+
+Then run the cargo commands
 
 cargo install rustweb
 
 cargo run rustweb 3000
 
-This should start the rustweb, listening on port 3000.
+This should start rustweb server, listening on port 3000.
 
 You should then be able to browse to http://localhost:3000/Menu
 
