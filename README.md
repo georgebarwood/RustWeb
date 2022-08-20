@@ -96,4 +96,4 @@ Links
 
 crates.io : https://crates.io/crates/rustweb
 
-repository: https://github.com/georgebarwood/RustDB
+repository: https://github.com/georgebarwood/Rustweb
