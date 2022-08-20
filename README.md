@@ -1,5 +1,4 @@
-Axum-based webserver based on rustdb database, with database browsing, 
-timed jobs, password hashing, data compression, email transmission and database replication.
+Axum-based webserver based on rustdb database, with database browsing, password hashing, database replication, email tranmission and timed jobs.
 
 USAGE:\
     rustweb.exe [OPTIONS] <PORT>
@@ -23,7 +22,7 @@ Installation and starting server
 ================================
 Change to the directory where you want the database stored ( it will be named rustweb.rustdb ). 
 
-Then run the cargo commands
+Install Rust, then run cargo commands
 
 cargo install rustweb
 
@@ -85,4 +84,3 @@ Timed Jobs
 A named SQL function (with no paramaters) can be called at a specified time by creating a record in timed.Job.
 
 This is used by the email system to retry temporary email send errors.
- 
