@@ -1,4 +1,4 @@
-Axum-based webserver based on rustdb database, with database browsing, password hashing, database replication, email tranmission and timed jobs.
+Axum-based webserver based on [rustdb](https://github.com/georgebarwood/RustDB) database, with database browsing, password hashing, database replication, email tranmission and timed jobs.
 
 Installation and starting server
 ================================
@@ -13,6 +13,8 @@ cargo run rustweb 3000
 This should start rustweb server, listening on port 3000.
 
 You should then be able to browse to http://localhost:3000/Menu
+
+From there are links to a Manual, Execute SQL, a list of Schemas and other links.
 
 Security
 ========
@@ -64,7 +66,7 @@ Permanent errors are logged in email.SendError
 Timed Jobs
 ==========
 
-A named SQL function (with no paramaters) can be called at a specified time by creating a record in timed.Job.
+A named SQL function (with no parameters) can be called at a specified time by creating a record in timed.Job.
 
 This is used by the email system to retry temporary email send errors.
 
@@ -87,4 +89,9 @@ OPTIONS:\
         --tracetime        Trace query time\
     -V, --version          Print version information
 
+Links
+=====
+
 crates.io : https://crates.io/crates/rustweb
+
+repository: https://github.com/georgebarwood/RustDB
