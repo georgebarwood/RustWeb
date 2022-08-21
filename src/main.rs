@@ -23,7 +23,7 @@ async fn main() {
     // Note that readers never have to wait, they get a "virtual" read-only copy of the database.
     let spd = Arc::new(SharedPagedData::new(stg));
     {
-       let mut s = spd.stash.write().unwrap();
+       let mut s = spd.stash.lock().unwrap();
        s.mem_limit = args.mem * 1000000;
        s.trace = args.tracemem;
     }
