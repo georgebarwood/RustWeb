@@ -1,5 +1,4 @@
 pub const INITSQL : &str = "
-
 CREATE FN [sys].[ClearTable](t int) AS 
 BEGIN 
   EXECUTE( 'DELETE FROM ' | sys.TableName(t) | ' WHERE true' )
@@ -1264,11 +1263,11 @@ BEGIN
   SET n = 1
   WHILE 1 = 1
   BEGIN
-    DECLARE v string, pv string
+    DECLARE v string, pv string, bs string
     SET v = web.Query('b' | n )
-    IF v = '' RETURN pv | result
+    IF v = '' RETURN pv | bs
 
-    IF pv != '' SET result = result | '&b' | (n-1) | '=' | web.UrlEncode(pv)
+    IF pv != '' SET  bs = bs | '&b' | (n-1) | '=' | web.UrlEncode(pv)
     SET pv = v
 
     SET n = n + 1
@@ -1589,7 +1588,7 @@ BEGIN
      | '<br>DROP TABLE dbo.Cust'
      | '<br>SELECT VERIFYDB()'
      | '<br>SELECT REPACKFILE(0,''dbo'',''Order'')'
-     | '<br>EXEC dbo.MakeOrders()'
+     | '<br>EXEC dbo.MakeOrders(50000)'
      | '<br>DELETE FROM dbo.Order WHERE true'
      | '<br>SELECT ''&lt;p>Id='' | Id | '' Len='' | BINLEN(data) FROM log.Transaction'
 
@@ -1666,6 +1665,9 @@ BEGIN
 END
 GO
 CREATE FN [handler].[/Manual]() AS BEGIN
+
+DECLARE cu int SET cu = login.get(0) IF cu = 0 RETURN
+
 EXEC web.Head('Manual')
 SELECT '<h1>Manual</h1>
 <p>This manual describes the various SQL statements that are available. Where syntax is described, optional elements are enclosed in square brackets.
@@ -1835,7 +1837,8 @@ BEGIN
 <p><a target=_blank href=/ScriptAll?mode=1>Script entire database</a> 
   | <a target=_blank href=/ScriptAll?mode=2>Filtered</a>    
   | <a target=_blank href=/ScriptExact>Exact</a>
-<p><a href=/CheckAll>Check all functions compile ok</a> | <a href=/VerifyDB>Verify Database</a>
+<p><a href=/CheckAll>Check all functions compile ok</a> 
+
 <h3>Schemas</h3>'
    SELECT '<a href=ShowSchema?s=' | Name | '>' | Name | '</a> | ' FROM sys.Schema ORDER BY Name
 
@@ -1910,7 +1913,7 @@ BEGIN
   DECLARE pw string SET pw = web.Form('pw')
   IF pw != '' 
   BEGIN
-    UPDATE login.user SET HashedPassword = login.hash(pw) WHERE Id = k
+    UPDATE login.user SET HashedPassword = login.hash(pw|k) WHERE Id = k
     EXEC web.Head( 'Password Set')
     SELECT '<p>Password set'
     EXEC web.Trailer()
@@ -1991,7 +1994,7 @@ CREATE FN [handler].[/VerifyDB]() AS
 BEGIN
   DECLARE cu int SET cu = login.get(1) IF cu = 0 RETURN
 
-  EXEC web.Head('Check All Functions compile')
+  EXEC web.Head('Verify database')
 
   SELECT '<p>' | VERIFYDB()
 
@@ -2029,13 +2032,13 @@ BEGIN
     | '</select>'
 END
 GO
-CREATE FN [dbo].[MakeOrders]() AS
+CREATE FN [dbo].[MakeOrders](n int) AS
 BEGIN 
   DELETE FROM dbo.Order WHERE 1 = 1
   DECLARE date int SET date = date.DaysToYearMonthDay(date.Today())
   DECLARE @I int 
   SET @I=0 
-  WHILE @I < 1000 -- Use 5000000 to stress system a bit!
+  WHILE @I < n
   BEGIN 
     INSERT INTO dbo.[Order](Cust,Total,Date) VALUES(1+@I%7, ( 501 * (@I%11+@I%7) ) / 100, date ) 
     SET @I=@I+1 
@@ -2054,18 +2057,6 @@ INSERT INTO [dbo].[Cust](Id,[FirstName],[LastName],[Age],[City],[x]) VALUES
 GO
 
 INSERT INTO [dbo].[Order](Id,[Cust],[Total],[Date],[Info]) VALUES 
-(1,8,99,1035517,'')
-(2,3,9,1035526,'')
-(3,1,1005,1035526,'test')
-(5,2,5,1035528,'')
-(6,1,50,1035532,'')
-(7,1,12,1035532,'')
-(8,3,99,1035532,'Something')
-(9,4,2,1035532,'')
-(10,5,0,1035532,'')
-(12,4,4,1035532,'xxxx')
-(13,4,9000,1035532,'')
-(14,6,9000,1035532,'')
 GO
 
 --############################################
@@ -2270,16 +2261,15 @@ BEGIN
 
   /*
      Login is initially disabled. Remove or comment out the line below enable Login after Login password has been setup for some user.
-     In addition, the salt string in login.Hash should be changed.
   */
   RETURN 1 -- Login disabled.
 
   IF username != ''
   BEGIN
     DECLARE password string SET password = web.Form('password')
-    DECLARE hpw binary SET hpw = login.hash( password )
-
-    SET result = Id FROM login.user WHERE Name = username AND HashedPassword = hpw /* Binary comparison not yet implemented! */
+    SET result = Id FROM login.user WHERE Name = username
+    DECLARE hpw binary SET hpw = login.hash( password|result )
+    SET result = Id FROM login.user WHERE Id = result AND HashedPassword = hpw
     IF result > 0
     BEGIN
       EXEC web.SetCookie( 'uid', '' | result, '' )
@@ -2307,7 +2297,7 @@ END
 GO
 CREATE FN [login].[hash](s string) RETURNS binary AS
 BEGIN
-  SET result = ARGON(s,'some random saltiness')
+  SET result = ARGON(s,'pomesoft saltiness')
 END
 GO
 INSERT INTO [login].[user](Id,[Name],[HashedPassword]) VALUES 
