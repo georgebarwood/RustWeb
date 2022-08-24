@@ -80,7 +80,7 @@ GET requests are processed using a read-only copy of the database, any changes m
 This is useful for requests that take a significant time to process, as other requests can be processed in parallel.
 This can be overriden by adding a query parameter "save".
 
-POST requests are assumed to be read-write, this can be overridden by adding a querey parameter "readonly".
+POST requests are assumed to be read-write, this can be overridden by adding a query parameter "readonly".
 
 Arguments and Options
 =====================
