@@ -174,6 +174,7 @@ use tower_cookies::{CookieManagerLayer, Cookies};
 struct ServerTrans {
     x: Box<GenTransaction>,
     log: bool,
+    readonly: bool,
 }
 
 impl ServerTrans {
@@ -181,6 +182,7 @@ impl ServerTrans {
         let mut result = Self {
             x: Box::new(GenTransaction::new()),
             log: true,
+            readonly: false,
         };
         result.x.ext = TransExt::new();
         result
@@ -233,7 +235,7 @@ struct SharedState {
 
 impl SharedState {
     async fn process(&self, mut st: ServerTrans) -> ServerTrans {
-        if st.x.qy.params.get("readonly").is_some()
+        if st.readonly
         {
             let spd = self.spd.clone();
             let bmap = self.bmap.clone();
@@ -287,6 +289,7 @@ async fn h_get(
 ) -> ServerTrans {
     // Build the ServerTrans.
     let mut st = ServerTrans::new();
+    st.readonly = !params.0.get("save").is_some();
     st.x.qy.path = path.0;
     st.x.qy.params = params.0;
     st.x.qy.cookies = map_cookies(cookies);
@@ -318,6 +321,7 @@ async fn h_post(
 ) -> ServerTrans {
     // Build the Server Transaction.
     let mut st = ServerTrans::new();
+    st.readonly = params.0.get("readonly").is_some();
     st.x.qy.path = path.0;
     st.x.qy.params = params.0;
     st.x.qy.cookies = map_cookies(cookies);
@@ -357,7 +361,7 @@ impl IntoResponse for ServerTrans {
 async fn sync_loop(rx: oneshot::Receiver<bool>, state: Arc<SharedState>) {
     let db_is_new = rx.await.unwrap();
     if db_is_new {
-        let sql = rget(state.clone(), "/ScriptExact").await;
+        let sql = rget(state.clone(), "/ScriptExact?readonly").await;
         let sql = std::str::from_utf8(&sql).unwrap().to_string();
         let mut st = ServerTrans::new();
         st.log = false;
