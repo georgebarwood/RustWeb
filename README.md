@@ -76,9 +76,11 @@ This is used by the email system to retry temporary email send errors.
 Read Only Requests
 ==================
 
-Requests with the parameter readonly are processed using a read-only copy of the database, any changes made are not saved.
-
+GET requests are processed using a read-only copy of the database, any changes made are not saved.
 This is useful for requests that take a significant time to process, as other requests can be processed in parallel.
+This can be overriden by adding a query parameter "save".
+
+POST requests are assumed to be read-write, this can be overridden by adding a querey parameter "readonly".
 
 Arguments and Options
 =====================
