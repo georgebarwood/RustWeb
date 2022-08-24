@@ -6,7 +6,10 @@ async fn main() {
     // console_subscriber::init();
 
     let args = Args::parse();
-    println!("ip={} port={} mem={} rep={} login={}", args.ip, args.port, args.mem, args.rep, args.login);
+    println!(
+        "ip={} port={} mem={} rep={} login={}",
+        args.ip, args.port, args.mem, args.rep, args.login
+    );
 
     let listen = format!("{}:{}", args.ip, args.port);
     let listen = listen.parse().expect("Error parsing listen address:port");
@@ -23,9 +26,9 @@ async fn main() {
     // Note that readers never have to wait, they get a "virtual" read-only copy of the database.
     let spd = Arc::new(SharedPagedData::new(stg));
     {
-       let mut s = spd.stash.lock().unwrap();
-       s.mem_limit = args.mem * 1000000;
-       s.trace = args.tracemem;
+        let mut s = spd.stash.lock().unwrap();
+        s.mem_limit = args.mem * 1000000;
+        s.trace = args.tracemem;
     }
     // Construct map of "builtin" functions that can be called in SQL code.
     // Include extra functions ARGON, EMAILTX and SLEEP as well as the standard functions.
@@ -36,14 +39,14 @@ async fn main() {
         ("EMAILTX", DataKind::Int, CompileFunc::Int(c_email_tx)),
         ("SLEEP", DataKind::Int, CompileFunc::Int(c_sleep)),
         ("TRANSWAIT", DataKind::Int, CompileFunc::Int(c_trans_wait)),
-/*
-        ("BINPACK", DataKind::Binary, CompileFunc::Value(c_binpack)),
-        (
-            "BINUNPACK",
-            DataKind::Binary,
-            CompileFunc::Value(c_binunpack),
-        ),
-*/
+        /*
+                ("BINPACK", DataKind::Binary, CompileFunc::Value(c_binpack)),
+                (
+                    "BINUNPACK",
+                    DataKind::Binary,
+                    CompileFunc::Value(c_binunpack),
+                ),
+        */
     ];
     for (name, typ, cf) in list {
         bmap.insert(name.to_string(), (typ, cf));
@@ -100,13 +103,10 @@ async fn main() {
         loop {
             let mut sm = rx.blocking_recv().unwrap();
             let sql = sm.st.x.qy.sql.clone();
-            if ss.tracetime
-            {
-              db.run_timed(&sql, &mut *sm.st.x);
-            }
-            else
-            {
-              db.run(&sql, &mut *sm.st.x);
+            if ss.tracetime {
+                db.run_timed(&sql, &mut *sm.st.x);
+            } else {
+                db.run(&sql, &mut *sm.st.x);
             }
 
             if sm.st.log && db.changed() {
@@ -232,23 +232,45 @@ struct SharedState {
 }
 
 impl SharedState {
-    async fn process(&self, st: ServerTrans) -> ServerTrans {
-        let (reply, rx) = oneshot::channel::<ServerTrans>();
-        let _err = self.tx.send(ServerMessage { st, reply }).await;
-        let mut st = rx.await.unwrap();
-        if self.is_master {
-            // Check if email needs sending or sleep time has been specified, etc.
-            let ext = st.x.get_extension();
-            if let Some(ext) = ext.downcast_ref::<TransExt>() {
-                if ext.sleep > 0 {
-                    let _ = self.sleep_tx.send(ext.sleep);
+    async fn process(&self, mut st: ServerTrans) -> ServerTrans {
+        if st.x.qy.params.get("readonly").is_some()
+        {
+            let spd = self.spd.clone();
+            let bmap = self.bmap.clone();
+            let tracetime = self.tracetime;
+            // Readonly request, use read-only copy of database.
+            tokio::task::spawn_blocking(move || {
+                let apd = AccessPagedData::new_reader(spd);
+                let db = Database::new(apd, "", bmap);
+                let sql = st.x.qy.sql.clone();
+                if tracetime {
+                    db.run_timed(&sql, &mut *st.x);
+                } else {
+                    db.run(&sql, &mut *st.x);
                 }
-                if ext.tx_email {
-                    let _ = self.email_tx.send(());
-                }
-            }
+                st
+            })
+            .await.unwrap()        
         }
-        st
+        else
+        {
+          let (reply, rx) = oneshot::channel::<ServerTrans>();
+          let _err = self.tx.send(ServerMessage { st, reply }).await;
+          let mut st = rx.await.unwrap();
+          if self.is_master {
+              // Check if email needs sending or sleep time has been specified, etc.
+              let ext = st.x.get_extension();
+              if let Some(ext) = ext.downcast_ref::<TransExt>() {
+                  if ext.sleep > 0 {
+                      let _ = self.sleep_tx.send(ext.sleep);
+                  }
+                  if ext.tx_email {
+                      let _ = self.email_tx.send(());
+                  }
+              }
+          }
+          st
+        }
     }
 
     fn trim_cache(&self) {
@@ -270,27 +292,7 @@ async fn h_get(
     st.x.qy.cookies = map_cookies(cookies);
 
     let mut wait_rx = ss.wait_tx.subscribe();
-    let spd = ss.spd.clone();
-    let bmap = ss.bmap.clone();
-
-    let tracetime = ss.tracetime;
-    let mut st = tokio::task::spawn_blocking(move || {
-        // GET requests should be read-only.
-        let apd = AccessPagedData::new_reader(spd);
-        let db = Database::new(apd, "", bmap);
-        let sql = st.x.qy.sql.clone();
-        if tracetime
-        {
-          db.run_timed(&sql, &mut *st.x);
-        }
-        else
-        {
-          db.run(&sql, &mut *st.x);
-        }
-        st
-    })
-    .await
-    .unwrap();
+    st = ss.process(st).await;
 
     let ext = st.x.get_extension();
     if let Some(ext) = ext.downcast_ref::<TransExt>() {
@@ -316,12 +318,6 @@ async fn h_post(
 ) -> ServerTrans {
     // Build the Server Transaction.
     let mut st = ServerTrans::new();
-/*
-    if !state.is_master {
-        st.x.rp.status_code = 421; // Misdirected Request
-        return st;
-    }
-*/
     st.x.qy.path = path.0;
     st.x.qy.params = params.0;
     st.x.qy.cookies = map_cookies(cookies);
@@ -805,32 +801,31 @@ use clap::Parser;
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-   /// Port to listen on
-   #[clap(value_parser = clap::value_parser!(u16).range(1..))]
-   port: u16,
+    /// Port to listen on
+    #[clap(value_parser = clap::value_parser!(u16).range(1..))]
+    port: u16,
 
-   /// Ip Address to listen on
-   #[clap(short, long, value_parser, default_value = "0.0.0.0")]
-   ip: String,
+    /// Ip Address to listen on
+    #[clap(short, long, value_parser, default_value = "0.0.0.0")]
+    ip: String,
 
-   /// Server to replicate
-   #[clap(short, long, value_parser, default_value = "")]
-   rep: String,
+    /// Server to replicate
+    #[clap(short, long, value_parser, default_value = "")]
+    rep: String,
 
-   /// Login cookies for replication
-   #[clap(short, long, value_parser, default_value = "")]
-   login: String,
+    /// Login cookies for replication
+    #[clap(short, long, value_parser, default_value = "")]
+    login: String,
 
-   /// Memory limit for page cache (in MB)
-   #[clap(short, long, value_parser, default_value_t = 10)]
-   mem: usize,
+    /// Memory limit for page cache (in MB)
+    #[clap(short, long, value_parser, default_value_t = 10)]
+    mem: usize,
 
-   /// Trace query time
-   #[clap(long, value_parser, default_value_t = false)]
-   tracetime: bool,
+    /// Trace query time
+    #[clap(long, value_parser, default_value_t = false)]
+    tracetime: bool,
 
-   /// Trace memory trimming
-   #[clap(long, value_parser, default_value_t = false)]
-   tracemem: bool,
-
+    /// Trace memory trimming
+    #[clap(long, value_parser, default_value_t = false)]
+    tracemem: bool,
 }
