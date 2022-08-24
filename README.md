@@ -78,7 +78,7 @@ Read Only Requests
 
 Requests with the parameter readonly are processed using a read-only copy of the database, any changes made are not saved.
 
-This is useful for requests that take a significant time to process, as other requests can be processed in paraallel.
+This is useful for requests that take a significant time to process, as other requests can be processed in parallel.
 
 Arguments and Options
 =====================
