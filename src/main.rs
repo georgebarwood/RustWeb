@@ -132,14 +132,11 @@ async fn main() {
     });
 
     // Build the axum app with a single route.
-    let app = Router::new().route("/*key", get(h_get).post(h_post))
-
-.layer(
+    let app = Router::new().route("/*key", get(h_get).post(h_post)).layer(
         ServiceBuilder::new()
             .layer(CookieManagerLayer::new())
             .layer(Extension(ss.clone())),
-    )
-;
+    );
 
     // Run the axum app.
     axum::Server::bind(&listen)
@@ -238,8 +235,7 @@ struct SharedState {
 
 impl SharedState {
     async fn process(&self, mut st: ServerTrans) -> ServerTrans {
-        if st.readonly
-        {
+        if st.readonly {
             let spd = self.spd.clone();
             let bmap = self.bmap.clone();
             let tracetime = self.tracetime;
@@ -255,26 +251,25 @@ impl SharedState {
                 }
                 st
             })
-            .await.unwrap()        
-        }
-        else
-        {
-          let (reply, rx) = oneshot::channel::<ServerTrans>();
-          let _err = self.tx.send(ServerMessage { st, reply }).await;
-          let mut st = rx.await.unwrap();
-          if self.is_master {
-              // Check if email needs sending or sleep time has been specified, etc.
-              let ext = st.x.get_extension();
-              if let Some(ext) = ext.downcast_ref::<TransExt>() {
-                  if ext.sleep > 0 {
-                      let _ = self.sleep_tx.send(ext.sleep);
-                  }
-                  if ext.tx_email {
-                      let _ = self.email_tx.send(());
-                  }
-              }
-          }
-          st
+            .await
+            .unwrap()
+        } else {
+            let (reply, rx) = oneshot::channel::<ServerTrans>();
+            let _err = self.tx.send(ServerMessage { st, reply }).await;
+            let mut st = rx.await.unwrap();
+            if self.is_master {
+                // Check if email needs sending or sleep time has been specified, etc.
+                let ext = st.x.get_extension();
+                if let Some(ext) = ext.downcast_ref::<TransExt>() {
+                    if ext.sleep > 0 {
+                        let _ = self.sleep_tx.send(ext.sleep);
+                    }
+                    if ext.tx_email {
+                        let _ = self.email_tx.send(());
+                    }
+                }
+            }
+            st
         }
     }
 
