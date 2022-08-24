@@ -132,11 +132,14 @@ async fn main() {
     });
 
     // Build the axum app with a single route.
-    let app = Router::new().route("/*key", get(h_get).post(h_post)).layer(
+    let app = Router::new().route("/*key", get(h_get).post(h_post))
+
+.layer(
         ServiceBuilder::new()
             .layer(CookieManagerLayer::new())
             .layer(Extension(ss.clone())),
-    );
+    )
+;
 
     // Run the axum app.
     axum::Server::bind(&listen)
