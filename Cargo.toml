@@ -1,6 +1,6 @@
 [package]
 name = "rustweb"
-version = "0.12.0"
+version = "0.13.0"
 edition = "2021"
 authors = ["George Barwood"]
 license = "MIT OR Apache-2.0"
@@ -10,20 +10,22 @@ repository = "https://github.com/georgebarwood/rustweb"
 [dependencies]
 clap = { version = "3.2.17", features = ["derive"] }
 axum = { version = "0.5.15", features = ["multipart"] }
+# axum = { version = "0.6.0-rc.1", features = ["multipart"] }
+# axum-extra = { version = "0.3.7", features = ["cookie"] }
 
 tokio = { version = "1.13.0", features = ["macros","rt-multi-thread","parking_lot"] }
 tower = { version = "0.4.10" }
 tower-cookies = "0.7.0"
 argon2rs = "0.2.5"
 serde = { version = "1.0.142", features = ["derive","rc"] }
-rmp-serde = "1.1.0"
 reqwest = "0.11.11"
 
 #rustdb = { path = "../rustdb" } 
-rustdb = { version = "2.9.1" }
+rustdb = { version = "3.0.0" }
 mimalloc = { version = "0.1.26", default-features = false }
 lettre = { version = "0.10.1" }
 flate3 = "0.1.21"
+bincode = "1.3.3"
 
 #console-subscriber = { path = "../console-main/console-subscriber" }
 #axum-debug = "0.2.0"
