@@ -1,4 +1,4 @@
-#![forbid(unsafe_code)]
+﻿#![forbid(unsafe_code)]
 
 #[tokio::main]
 /// Execution starts here.
@@ -102,17 +102,12 @@ async fn main() {
         }
         loop {
             let mut sm = rx.blocking_recv().unwrap();
-            let sql = sm.st.x.qy.sql.clone();
-            if ss.tracetime {
-                db.run_timed(&sql, &mut *sm.st.x);
-            } else {
-                db.run(&sql, &mut *sm.st.x);
-            }
+            sm.st.run(&db, ss.tracetime);
 
             if sm.st.log && db.changed() {
                 if let Some(t) = db.get_table(&ObjRef::new("log", "Transaction")) {
                     // Append serialised transaction to log.Transaction table
-                    let ser = rmp_serde::to_vec(&sm.st.x.qy).unwrap();
+                    let ser = bincode::serialize(&sm.st.x.qy).unwrap();
                     let ser = Value::RcBinary(Rc::new(ser));
                     let mut row = t.row();
                     row.id = t.alloc_id() as i64;
@@ -162,7 +157,7 @@ use axum::{
 use rustdb::{
     c_int, c_value, check_types, standard_builtins, AccessPagedData, AtomicFile, Block, BuiltinMap,
     CExp, CExpPtr, CompileFunc, DataKind, Database, EvalEnv, Expr, GenTransaction, ObjRef, Part,
-    SharedPagedData, SimpleFileStorage, Transaction, Value,
+    SharedPagedData, SimpleFileStorage, Transaction, Value, DB,
 };
 use std::{collections::BTreeMap, rc::Rc, sync::Arc, thread};
 
@@ -186,6 +181,18 @@ impl ServerTrans {
         };
         result.x.ext = TransExt::new();
         result
+    }
+
+    fn run(&mut self, db: &DB, tt: bool) {
+        let sql = self.x.qy.sql.clone();
+        if tt {
+            let start = std::time::SystemTime::now();
+            db.run(&sql, &mut *self.x);
+            let time = start.elapsed().unwrap();
+            println!("ran path={} time={}µs", self.x.arg(0, ""), time.as_micros());
+        } else {
+            db.run(&sql, &mut *self.x);
+        }
     }
 }
 
@@ -243,12 +250,7 @@ impl SharedState {
             tokio::task::spawn_blocking(move || {
                 let apd = AccessPagedData::new_reader(spd);
                 let db = Database::new(apd, "", bmap);
-                let sql = st.x.qy.sql.clone();
-                if tracetime {
-                    db.run_timed(&sql, &mut *st.x);
-                } else {
-                    db.run(&sql, &mut *st.x);
-                }
+                st.run(&db, tracetime);
                 st
             })
             .await
@@ -378,7 +380,7 @@ async fn sync_loop(rx: oneshot::Receiver<bool>, state: Arc<SharedState>) {
         let ser = rget(state.clone(), &url).await;
         if !ser.is_empty() {
             let mut st = ServerTrans::new();
-            st.x.qy = rmp_serde::from_slice(&ser).unwrap();
+            st.x.qy = bincode::deserialize(&ser).unwrap();
             state.process(st).await;
             println!("Slave database updated Transaction Id={tid}");
         }
