@@ -1,19 +1,19 @@
-Axum-based webserver based on [rustdb](https://github.com/georgebarwood/RustDB) database, 
+Webserver based on [rustdb](https://github.com/georgebarwood/RustDB) database, 
 with database browsing, password hashing, database replication, email transmission and timed jobs.
 
 Installation and starting server
 ================================
 First install [Rust](https://www.rust-lang.org/tools/install) if it is not already installed.
-Then install rustweb from a command prompt using
+Then install rustweb2 from a command prompt using
 
-cargo install rustweb
+cargo install rustweb2
 
 From a command prompt, change to the the directory where the database is to be stored ( the file will be named rustweb.rustdb ). 
-Start rustweb using
+Start rustweb2 using
 
-rustweb 3000
+rustweb2 3000
 
-This should start rustweb server, listening on port 3000 ( you can use any available port ).
+This should start rustweb2 server, listening on port 3000 ( you can use any available port ).
 You should then be able to browse to http://localhost:3000/Menu
 From there are links to a Manual, Execute SQL, a list of Schemas and other links.
 
@@ -24,20 +24,18 @@ Initially login security is disabled. To enable it
 
 (1) Edit the function login.hash and change the salt string.
 
-(2) Create a record in login.user.
+(2) Use the Logins Menu link to set add a login user and set password.
 
-(3) Use the Logins Menu link to set a password.
-
-(4) Edit the function login.get ( see instructions included there ).
+(3) Edit the function login.get ( see instructions included there ).
 
 Database replication
 ====================
 
-Start Rustweb in the directory (folder) where you want the replicated database stored, specifying the  -rep option
+Start Rustweb2 in the directory (folder) where you want the replicated database stored, specifying the  -rep option
 
 For example:
 
-rustweb 2000 --rep https://mydomain.com
+rustweb2 2000 --rep https://mydomain.com
 
 If login security has been enabled, you will need to specify login details ( obtained from the login.user table ), for example:
 
@@ -82,28 +80,9 @@ This can be overriden by adding a query parameter "save".
 
 POST requests are assumed to be read-write, this can be overridden by adding a query parameter "readonly".
 
-Arguments and Options
-=====================
-
-USAGE:\
-    rustweb [OPTIONS] <PORT>
-
-ARGS:\
-    <PORT>    Port to listen on
-
-OPTIONS:\
-    -h, --help             Print help information\
-    -i, --ip <IP>          Ip Address to listen on [default: 0.0.0.0]\
-    -l, --login <LOGIN>    Login cookies for replication [default: ]\
-    -m, --mem <MEM>        Memory limit for page cache (in MB) [default: 10]\
-    -r, --rep <REP>        Server to replicate [default: ]\
-        --tracemem         Trace memory trimming\
-        --tracetime        Trace query time\
-    -V, --version          Print version information
-
 Links
 =====
 
-crates.io : https://crates.io/crates/rustweb
+crates.io : https://crates.io/crates/rustweb2
 
-repository: https://github.com/georgebarwood/Rustweb
+repository: https://github.com/georgebarwood/Rustweb2
